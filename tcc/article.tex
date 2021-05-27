@@ -1,0 +1,29 @@
+%Helper file which allows me compile the article without worrying about ABNT stuff
+
+\documentclass[12pt]{article}
+\usepackage[a4paper,top=25mm,bottom=25mm,width=150mm]{geometry}
+\usepackage[brazilian]{babel}
+\usepackage[backend=biber,style=authoryear,sorting=nyt]{biblatex}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\addbibresource{refs.bib}
+\usepackage{listings}
+\usepackage{graphicx}
+\lstset{language=Haskell,
+  basicstyle=\ttfamily\scriptsize}
+
+\input{figures/figures}
+\renewcommand{\cite}{\parencite}
+
+\begin{document}
+\title{Expressões regular em linguagem funcional: Módulo de busca usando expressões regulares implementado em Haskell}
+\author{Bruno Gomes}
+\date{\today}
+\maketitle
+
+\input{tex/introducao}
+\input{tex/desenvolvimento}
+\input{tex/conclusao}
+\input{tex/cronograma}
+\printbibliography
+\end{document}

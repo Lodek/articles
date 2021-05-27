@@ -1,0 +1,320 @@
+\subsection{METODOLOGIA}
+\subsubsection{Desenvolvimento PDD}
+\paragraph{Representação}
+A representação de um circuito é de extrema importância para o simulador.
+Uma representação complexa e detalhada torna a ferramenta menos acessível a novos usuários.
+Sendo assim, a representação escolhida tentou ser simples e familiar, pois modela circuitos de maneira análoga ao apresentado nas literaturas.
+
+Definir a representação foi o primeiro passo do processo criativo pois ela define a interface do código.
+A interface definida passou por uma série de iterações até chegar em um resultado que o autor considerou agradável e compreensível.
+Como um dos objetivos é desenvolver uma ferramenta amigável, primeiramente será demonstrado snippets de código do modelo implementado.
+
+O código abaixo cria uma porta do tipo AND e altera os sinais de entrada dessa porta.
+Percebe-se que a porta é criada usando a notação usual de construção de objetos usada nas linguagens orientada a objetos.
+A porta AND possui duas entradas (A e B) e uma saída (Y), e como foi visto anteriormente cada uma dessas conexões é um terminal.
+A interação com os terminais é feita a partir do operador ponto (usado para acessar atributos).
+No código acessamos a bus ligada ao terminal "A" da porta lógica e em seguida modificamos o valor do sinal dela.
+Essa operação foi executada de maneira enxuta e legível, sem dificuldades para o usuário.
+O mesmo procedimento é executado na porta "B" e finalmente executa-se a função print para verificar o sinal no terminal "Y".
+Também é possível chamar print na porta como um todo e é impresso todas as informações referentes ao circuito.
+
+\begin{lstlisting}
+  porta = AND() #cria porta do tipo AND e armazena a referencia na variavel porta
+  porta.a.signal = 1 #modifica o sinal presente na Bus conectada ao terminal A
+  porta.b = 1
+  print(porta.y) #imprime informacao do terminal Y
+  print(porta) #impreme informacao do circuito
+\end{lstlisting}
+
+A composição de circuitos também é feita a partir de operações nos objetos.
+O código abaixo cria duas portas AND, p1 e p2, e conecta a saída de p1 à entrada de p2.
+A conexão dos circuitos é feita a partir do método "connect".
+Esse método faz uso de argumentos do tipo chave-valor.
+O método recebe um conjunto chave-valor onde a chave é o nome de um terminal do circuito e o valor é a bus que será ligada ao terminal.
+A conexão entre os dois circuitos foi feita em uma linha de código de maneira clara e simples.
+
+\begin{lstlisting}
+  p1, p2 = AND(), AND()
+  p2.connect(a=p1.y) #Liga saida de p1 na entrada 'a' de p2
+\end{lstlisting}
+
+O próximo snippet utiliza os conceitos apresentados até agora e aplica modularidade ao processo.
+O código a seguir define um novo circuito, ou seja uma classe, e a ele damos o nome "NovoCircuito".
+NovoCircuito herda de uma classe abstrata disponibilizada pela ferramenta e implementa o mesmo circuito do exemplo anterior (duas portas AND conectadas).
+A vantagem de criar uma classe para esse circuito é que ele fica reutilizável e basta criar uma nova instância do objeto, além de aplicar o conceito de hierarquia, ou seja, construímos um circuito mais complexo a partir de circuitos simples.
+A classe herdeira deve definir os nomes dos terminais de entrada e saída, e implementar o método "make".
+Os atributos "input\_labels" e "output\_labels" devem ser uma lista de strings que definem os nomes dos terminais de entrada e saída, respectivamente.
+O método make é aonde as conexões entre sub circuitos são definidas.
+Algo de grande importância no método make é que o usuário deve chamar o método \texttt{self.get\_inputs()}.
+Esse método retorna um struct contendo as buses internas ao circuito sendo construído.
+Esse passo é essencial, pois é a partir dessas buses que é feita a conexão do NovoCircuito com os subcircuitos presentes nele.
+Sem os objetos retornados pelo \texttt{get\_inputs}, NovoCircuito seria uma caixa preta com entradas ligadas a nenhum subcircuito.
+
+\begin{lstlisting}
+class NovoCircuito(BaseCircuit):
+    input_labels = ['a', 'b', 'c'] #lista de nomes dos terminais de entrada
+    output_labels = ['y'] #lista de nomes dos terminais de saida
+
+    def make(self):
+        i = self.get_inputs() #objeto que contem as buses internas ao circuito NovoCircuito.
+        and_1 = AND()
+        and_1.connect(a=i.a, b=i.b) #Conecta as buses de entrada a e b ao circuito and_1
+        and_2 = AND(a=and_1.y, b=i.c) 
+        self.set_outputs(y=and_2.y) #Conecta a saida do circuito and_2 a saida 'Y' do NovoCircuito
+\end{lstlisting}
+
+Finalmente, o último snippet demonstra a utilização de NovoCircuito.
+O processo é idêntico à criação de uma porta AND.
+
+\begin{lstlisting}
+  novo = NovoCircuito()
+  novo.a.signal = 1
+  novo.c.signal = 0
+  print(novo)
+\end{lstlisting}
+
+Os quatro snippets acima são curtos porém eles, de certa forma, são tudo o que um usuário precisa entender sobre a ferramenta.
+Os snippets introduzem a "linguagem" da ferramenta, com essa linguagem o usuário pode modelar qualquer circuito que ele queira.
+A simples representação escolhida é o diferencial da ferramenta e a partir dela, pode-se criar circuitos de complexidade incremental, usando modularidade e hierarquia, e tudo isso com uma interface de código consistente.
+
+\paragraph{Arquitetura do simulador}
+As classes usadas para definir o modelo foram introduzidas no referêncial teórico.
+Nessa seção serão apresentadas as interfaces e as funcionalidades dessas classes.
+
+A classe Wire, modela um fio que armazena um bit.
+Wire armazena esse bit em uma variável booleana que pode ser modificado usando os metodos \texttt{set()} e \texttt{reset()}.
+Objetos do tipo Wire são imutáveis e essa característica vai ser fundamental para a implementação da lógica de atualização do simulador.
+
+A classe Bus representa um conjunto de fios (objetos do tipo Wire).
+Essa classe define uma abstração em cima da classe Wire, fazendo com que Wire não seja relevante ao usuário.
+Ao invés de armazenar 1 bit de informação, Bus armazena n bits, onde n é o número de fios que constituem a mesma.
+Sendo assim, Bus possui o atributo sinal que representa um número construído a partir dos bits armazenados nos fios.
+Bus possui o atributo wires que é uma lista de objetos wire.
+Como a bus representa uma informação multibit a ordenação dos fios na lista é importante.
+O fio na posição $n$ na lista representa o bit na posição $n$.
+Objetos do tipo Bus são mutáveis, um usuário pode realizar operações em Bus para construir outras Bus a partir da mesma.
+Por exemplo, suponha que uma Bus W tenha 8 wires, o usuário pode construir uma Bus Y que tenha os 4 primeiros wires de W.
+Isso foi feito para facilitar o acesso a bits em uma Bus, sendo esse um caso de uso comum na construção de circuitos digitais.
+Finalmente, para alterar o valor de um sinal na Bus basta usar o comando bus.signal = 3.
+
+A classe Terminal é usada para definir entradas e saídas em um circuito.
+O objeto Terminal pode ser visualizado como uma porta lógica do tipo Buffer onde existe uma entrada e uma saída, porém Terminal possui algumas conveniências.
+O terminal pode funcionar como um inversor e um buffer de três estados, basta configurá-lo corretamente na fase de construção do objeto.
+Tendo um único objeto que apresente todas essas funcionalidades é desejável pois fica extremamente fácil de reutilizar circuitos.
+Suponha que tenha sido construído um circuito multiplexador comum e que em um momento futuro o usuário precise inverter uma das entradas do multiplexador ou adicionar um buffer de três estados na saída.
+Assim, as conveniências da classe Terminal evita a necessidade de construir uma outra classe ou adicionar uma porta NOT no circuito, basta informar os parâmetros corretos na hora de inicializar o objeto.
+Os atributos de Terminal são "bus-in" e "bus-out", que definem as buses de entrada e saída, respectivamente, "en" que define a configuração do buffer de três estados, "invert" que configura o terminal como uma porta NOT e "size" que define o tamanho das buses que podem ser conectados ao terminal.
+O método propagate replica o sinal da bus de entrada para a bus de saída, dependendo da configuração do terminal.
+Por exemplo, caso o comportamento de três estados do terminal esteja com impedância alta na saída, o método propagate não mudará o valor da bus de saída;
+ou caso o terminal esteja configurado para negar a saída, o sinal de saída será o completo do sinal de entrada.
+
+Finalmente, temos a classe que modela circuitos, a classe BaseCircuit.
+A classe BaseCircuit define uma classe abstrata.
+Essa classe implementa um construtor que, a partir dos atributos "input\_labels" e "output\_labels", automaticamente cria terminais de entrada e saída, buses para esses terminais e chama o método \texttt{make()}, responsável pela criação e configuração dos subcircuitos.
+Fora o método make, essa classe implementa o método update, que é responsável por atualizar o circuito, e nesse ponto existe uma sutileza do design da ferramenta.
+
+Deve-se lembrar que o simulador faz uso da  hierarquia, ou seja, circuitos são construídos a partir da combinação de circuitos mais simples.
+Isso faz com que a atualização do circuito seja, na verdade, a atualização dos subcircuitos que o compõe. 
+Como os circuitos são construídos a partir das portas lógicas, isso faz com que todo o trabalho de atualização seja feito a um nível de AND, OR e XOR.
+Sendo assim, para implementar o método de atualização da classe BaseCircuito, o circuito deve chamar o método propagate para todos os terminais de entrada e chamar o método de atualização nos subcircuitos.
+Esse ciclo de transferência de responsabilidades se repete até chegar nas portas lógicas, onde são realizados as operações da álgebra booleana sobre os sinais de entrada.
+
+Agora que foram explicadas todas as relações entre as classes do modelo, o único passo que falta é a implementação das portas lógicas.
+Como toda a complexidade de criar uma interface constante esta definido na classe BaseCircuit, a implementação das portas lógicas é feita de maneira similar aos exemplos dados na seção anterior.
+A única diferençã é que as portas lógicas dão override no método update, pois como visto acima, elas têm uma responsabilidade diferente aos outros circuitos.
+
+O snippet abaixo contém o código usado para implementar a porta AND.
+Nota-se que o código faz uso de herança e aproveita os métodos ja implementados na classe pai para atualizar as buses internas do circuito.
+A operação lógica AND é feita usando o operador "\&" presente por padrão na linguagem Python.
+As portas lógicas OR e XOR foram construidas de maneira análoga, substituindo o operador \& pelos operadores $|$ e \^{}, para a porta OR e XOR, respectivamente
+
+\begin{lstlisting}
+class AND(BaseCircuit):
+    """
+    Implementacao da porta AND.
+    Entradas: a e b
+    Saidas: y
+    Classe realiza override do metodo update e realiza operacoes binarias sobre os sinais das buses
+    """
+    input_labels = 'a b'.split()
+    output_labels = 'y'.split()
+    def update(self):
+        super().update() #chama o metodo update na classe pai, propaga o sinais de entrada para as buses internas
+        i = self.get_inputs() #recebe buses internas
+        output_signal = i.a.signal & i.b.signal #realiza a operacao binaria and sobre os sinais de entrada
+        i.y.signal = output_signal #altera o sinal da bus de saida
+        super().update() #novamente chama o metodo update para atualizar o sinal da bus de saida
+\end{lstlisting}
+
+Foi feita uma descrição alto nível das classes, sem entrar em particularidades de implementação na linguagem Python.
+As classes como foram apresentadas acima definem o comportamento do modelo do simulador.
+O código fonte completo de todas as classes, como foi explicado acima está disponível em http://github.com/lodek/pdd.
+
+\paragraph{Back end}
+O único elemento que resta para o funcionamento do simulador é uma entidade que automatize o processo de atualização de circuitos.
+Em um circuito eletrônico digital real, quando o valor entrada de um circuito muda, após o atraso propagacional do mesmo, o valor de saída muda.
+Esse comportamento foi usado como inspiração para solucionar o problema de atualização do processador e a solução foi implementada o padrão Observer.
+
+Como foi visto, o Observer é usado quando existe uma dependência entre objetos.
+O uso previsto do Observer é de uma relação um para muitos, porém o caso de uso no simulador é uma relação de muitos para muitos.
+Para solucionar o problema acima, foi definido que um circuito depende de um conjunto de fios (objetos Wire).
+O padrão Observer então permite que cada vez que um Wire seja modificado, esse informe aos seus dependentes e os atualize de maneira automática.
+Nesse caso, foi definido que ao alterar o valor de entrada de qualquer circuito, ou seja, os valores dos objetos Wire, isso gera um evento.
+
+A implementação do padrão Observer foi feita a partir das classes "Updater" e "Event".
+A classe Event é um objeto simples que contém apenas o atributo source, uma referência para o Wire que criou o evento.
+A classe Updater possui os atributos relations e events, e possui o método update.
+O atributo relations é uma hashtable onde a chave é um objeto do tipo Wire e o valor é uma lista de objetos do tipo Circuit que são os dependentes do objeto Wire.
+Já o atributo events é uma lista do tipo FIFO de objeto Event.
+O método update inicia o ciclo de atualização do simulador, uma versão simplificada do algorítimo de atualização é apresentada a seguir.
+\begin{lstlisting}
+while updater.events: #iterar sobre fifo de eventos
+    eventos = updater.events.pop() #remover primeiro evento
+    dependentes = updater.relations[event.wire] #lista de circuitos dependentes do objeto wire
+    for dependente in dependentes: #atualizar dependentes
+        dependente.update()
+\end{lstlisting}
+O algorítimo de atualização foi escrito em 6 linhas.
+Essa implementação simples é graças ao uso de eventos e do padrão Observer que separa a responsabilidade do processo de atualização entre as classes.
+
+Aplicando o algoritmo acima para o circuito multiplexador (fig. \ref{f-hmux}), suponha que foi modificado o sinal de D0.
+Por construção, A0 notifica o Updater com um evento.
+Em seguida, é iniciado o processo de atualização usando updater.update().
+O Observer irá identificar o evento gerado por D0 e então verifica os dependentes de D0.
+Como M1 é dependente de D0, o Observer atualiza M1, que por sua vez modifica Y1, que por sua vez notifica o Observer.
+Novamente, o Observer identifica um evento presente no FIFO e verifica os dependentes de Y1.
+Esse processo se repete até que o FIFO de eventos esteja vazio.
+Percebe-se que a alteração de uma Bus pode iniciar um efeito cascata, fazendo com que uma série de circuitos sejam atualizados.
+O uso do Observer permite que esse processo de atualização seja feito de maneira simples.
+
+Alguns pontos são importantes a respeito desta implementação.
+O cadastro dos fios no Observer é feito pela classe BaseCircuit durante a construção do objeto, tal que o usuário não precisa conhecer o backend.
+Também é importante ressaltar que o Observer usa objetos do tipo Wire, e não Bus, como fontes de eventos pois os objetos Bus são mutáveis, o que impossibilita o armazenamento das relações entre circuitos.
+
+\paragraph{Front end}
+Foram definidas duas maneiras de interação com o simulador.
+Uma das maneiras é um ambiente tipo sandbox em que o usuário têm uma interação dinâmica com a ferramenta usando um REPL (Read-Evaluate-Print-Loop).
+Como Python é uma linguagem interpretada, a própria linguagem oferece o REPL para ser usado.
+A outra interface prevista é que a simulação dos circuitos será feita a partir de scripts escritos pelo usuário.
+Essa metodologia é um pouco menos intuitiva porém é muito mais eficiente, já que uma vez criado o script, basta executá-lo novamente para recriar a simulação.
+
+Para fazer uso do ambiente sandbox, o computador deve estar com Python instalado e a biblioteca escrita.
+Sendo atendido esses requisitos de ambiente, basta que o usuário inicie o interpretador Python, importe a biblioteca e chame o método de configuração inicial.
+Sendo feito essa configuração inicial o usuário pode criar e interagir com circuitos como foi descrito na seção de interface.
+O snippet abaixo mostra os imports que devem ser feitos e o simulador funcionando para uma porta AND.
+
+\begin{lstlisting}
+Python 3.7.4 (default, Jul 16 2019, 07:12:58) 
+Type 'copyright', 'credits' or 'license' for more information
+IPython 7.6.1 -- An enhanced Interactive Python. Type '?' for help.
+
+In [1]: import pdd
+
+In [2]: from pdd.combinational_blocks import *
+
+In [4]: pdd.core.Wire.auto_update = True
+
+In [24]: a = AND()
+
+In [25]: a
+Out[25]: Gate AND: a=0x0; b=0x0; y=0x0; 
+
+In [26]: a.a.set()
+
+In [27]: a
+Out[27]: Gate AND: a=0x1; b=0x0; y=0x0; 
+
+In [28]: a.b.set()
+
+In [29]: a
+Out[29]: Gate AND: a=0x1; b=0x1; y=0x1; 
+\end{lstlisting}
+
+A outra possibilidade de uso é através de scripts.
+O uso de scripts garante que nada seja perdido, todas as instruções sempre estarão salvas nele.
+Por exemplo, um usuário pode definir um módulo Python com circuitos escritos por ele e uma função que realize a manipulação dos sinais de maneira automatizada.
+Isso permite que, em caso de erros na implementação do circuito, basta abrir o script, corrigi-lo e executá-lo novamente.
+Um uso mais avançado, porém possível, é usar uma metodologia tipo TDD (Test Driven Development) para desenvolver um circuito.
+
+Como exemplo de script que pode ser escrito, o snippet abaixo é um script que implementa um circuito e apresenta os valores impressos no terminal.
+O script implementa um circuito multiplexador de 2 entrada como é apresentado em \cite{harris}.
+Nota-se que o circuito "d0\_and" faz uso da funcionalidade inversora da classe terminal para evitar o uso de uma porta NOT.
+Apos a definição do circuito, cria-se um objeto do tipo SimpleMux e modifica-se os sinais de entrada do circuito.
+O snippet contém também os valores de saída apresentados no terminal.
+
+\begin{lstlisting}
+import pdd
+from pdd.combinational_blocks import *
+from pdd.dl import BaseCircuit
+pdd.core.Wire.auto_update = True
+
+class SimpleMux(BaseCircuit):
+    """
+    Circuito multiplexer com 2 entrada e 1 linha de select
+    """
+    input_labels = 'd0 d1 s'.split()
+    output_labels = 'y'.split()
+
+    def make(self):
+        i = self.get_inputs()
+        d0_and = AND(a=i.d0, b=i.s, bubbles=['b']) #AND com entrada B invertida
+        d1_and = AND(a=i.d1, b=i.s)
+        select_or = OR(a=d0_and.y, b=d1_and.y)
+        self.set_outputs(y=select_or.y)
+
+mux = SimpleMux()
+print(mux)
+mux.d0 = 1
+print(mux)
+mux.s = 1
+print(mux)
+
+#######################################
+#Output do terminal
+#######################################
+
+~/projects/pdd $ python mux_script.py
+SimpleMux: {'d0': '0x0', 'd1': '0x0', 's': '0x0', 'y': '0x0'}
+SimpleMux: {'d0': '0x1', 'd1': '0x0', 's': '0x0', 'y': '0x1'}
+SimpleMux: {'d0': '0x1', 'd1': '0x0', 's': '0x1', 'y': '0x0'}
+\end{lstlisting}
+
+Isso encerra a definição e construção do simulador.
+Como visto acima, foi implementado um circuito multiplexador construído a partir de portas lógicas.
+Partindo das portas AND, OR e XOR é possível implementar qualquer circuito combinacional pois eles são definidos a partir dessas operações.
+A lógica sequencial é apresentada em \cite{harris} como uma construção hierárquica a partir do circuito SR Latch e lógica combinacional.
+Como o próprio circuito SR é feito a partir de lógica combinacional, isso quer dizer que pode-se implementar os outros circuitos sequencias tais como D Latchs e Flip Flops, apenas usando as portas lógicas.
+
+\subsubsection{Construindo processador SAP1}
+A construção do processador SAP1 é feita a partir da construção de vários submodulos.
+Como visto, o processador faz uso de um circuito subtrator e somador, registradores, memória rom, unidade de controle e contador.
+Logo, para construir o processador deve-se construir esses subcircuitos e definir a classe processador como qualquer outro circuito.
+
+A construção desse blocos a partir de portas lógicas está descrita em \cite{harris}.
+Cada circuito foi construido da mesma maneira: crie uma classe herdando Base\_circuit; defina as entradas e saídas; implemente o método make seguindo as conexões descritas na literatura; usando testes unitários verifique que o circuito se comporta de acordo com a tabela verdade do mesmo.
+O critério de aceitação para um circuito é que o circuito é aceito quando o valor de saída produzido pelo simulador para cada combinação de valores de entrada concorda com o valor esperado na teoria.
+A lista de todos os subcircuitos feitos para codificar o processador é extensa.
+O código fonte dos circuitos está disponível http://github.com/lodek/pdd.
+
+Com todos os subcircuitos codificados, a construção do processador foi feita seguindo o diagrama de blocos do processador.
+Foi criada uma bus central e todos os blocos foram conectados a ela.
+
+Para executar programas no processador foi feito um script que: cria o objeto processador, carrega a memória ROM do processador com as instruções do programa, pulsa o clock pelo número de ciclos necessários para executar o programa e imprime o valor de saída do processador.
+No total, foram escritos 2 programas que testam o funcionamento do processador.
+Esses programas são apresentados nas tabelas \ref{tab-p1} e \ref{tab-p2}.
+
+\input{tables/programs}
+
+O programa 1 na tabela \ref{tab-p1} testa a instrução LDA e a instrução OUT.
+O programa carrega o registrador A com o valor no endereço 0x0F e em seguida executa a instrução OUT.
+O comportamento esperado é que o valor no registrador O seja o mesmo valor contido no endereço 0x0F.
+
+O programa 2 na tabela \ref{tab-p2} testa a instrução as instruções que restam, SUM e SUB.
+Primeiramente o programa executa a instrução LDA, e carrega o registrador A com o valor $3$.
+Em seguida o programa executa a instrução ADD e soma o valor contido no endereço 0x0E (0x06) ao valor em A.
+Finalmente, o programa executa SUB e subtrai o valor em A com o valor no endereço 0x0D (0x02). 
+O programa encerra com a instrução OUT.
+Espera-se que o valor contido no registrador O seja 0x07 ($3+6-2$).
+
+O processador foi considerado correto quando o valor obtido da execução de cada programa concordava com o valor esperado.
+

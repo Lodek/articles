@@ -1,0 +1,14 @@
+\begin{table}
+  \caption{Instruções da arquitetura SAP1 e suas descrições.}
+\begin{tabular*}{0.5\linewidth}{lcp{4cm}}
+  \hline
+ Inst. & Op code & Descrição \\
+ \hline
+ LDA         &     0x0 & Carrega o acumulador com o valor contido nos bits [0,3] \\
+ ADD         &     0x1 & Soma o valor presente no acumulador com o valor contido no endereço apontado pelos bits [0,3] da instrução. \\
+ SUB         &     0x2 & Subtrai o valor presente no acumulador com o valor contido no endereço apontado pelos bits [0,3] da intrução.\\
+ OUT         &     0xE & Escreve o valor contido no acumulador ao registro de saída (O). \\ 
+ \hline
+\end{tabular*}
+\label{t-inst}
+\end{table}

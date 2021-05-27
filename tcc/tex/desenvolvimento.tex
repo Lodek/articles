@@ -1,0 +1,133 @@
+\section{EXPRESSÕES REGULARES E PROGRAMAÇÃO FUNCIONAL}
+Como foi abordado na introdução, esse trabalho une dois temas: expressões regulares e programação funcional.
+Esses temas serão, primeiramente, discutidos separadamente, e em seguida será feito uma previa de como será feita a construção do motor de processamento de expressões regulares.
+
+\subsection{Introdução as expressões regulares}
+
+Expressões regulares, tambem conhecidas como \emph{regex} (da junção do nome em inglês, \emph{regular expression}) são utilizadas para realizar buscas complexas sobre strings.
+Para Cox,
+"expressões regulares são uma notação que descreve um conjunto de strings.
+Quando alguma string está no conjunto associado à expressão regular, pode-se dizer que essa expressão regular corresponde a esse string." \cite{cox}.
+
+As regexes são utilizadas frequentemente, tanto para extrair informações que seguem um padrão ou para realizar buscas mais flexíveis ou parciais.
+Como exemplo, suponha o problema de extrair todas os strings que correspondem a um horario em um texto.
+A escrita de um horario segue uma estrutura padrão, HH:MM:SS onde HH delimita as horas, MM delimita os minutos e SS delimita os segundos.
+Sem ter que construir todas as possíveis combinações de horas que seguem esse formato, uma simples varredura de texto é incapaz de extrair essa informação.
+Esse problema pode ser resolvido tranquilamente usando regexes.
+
+Uma expressão regular que realiza esta busca é,
+\begin{equation}
+  [0-9]\{2\}:[0-9]\{2\}:[0-9]\{2\} .
+\end{equation}
+
+Em palavras, os símbolos [0-9] representa qualquer carácter numerico entre 0 e 9.
+De maneira geral os símbolos [] representam um conunto de caracteres \cite{python-re}.
+O token \{2\} indica uma repetição, sendo equivalente à regex [0-9][0-9], ou seja dois carácteres numericos.
+Os simbolos \{\} são usados para representar repetição \cite{python-re}.
+O caractere ":" é interpretado de maneira literal.
+Fazendo a união, a regex acima equivale a qualquer string que tenha o formato DD:DD:DD onde D indica qualquer digito de 0-9.
+Podemos ver que esse formato é exatamente o formato definido anteriormente.
+
+É importante ressaltar que existem inumeras variações e implementações de regexes, onde existem diferentes meta-caracteres para descrever operações.
+Em \cite{mastering}, o autor discute as diferenças em regex entre as linguagens: PHP, .NET, Java e Perl.
+Na documentação oficial da linguagem Python \cite{python-re} é dito que o dialeto usado é basedo nas expressões regulares da linguagem Perl com alguns adicionais.
+Usuários UNIX também estão familiarizados com os \emph{wildcards} presentes nos shells, uma forma de regex.
+Em resumo, existem diversos dialetos porém o objetivo das regexes não se altera, buscar por padrões.
+A regex acima e todas as regexes subsequentes nesse texto serão escritos no dialeto da linguagem Perl. 
+
+\subsection{Programação Funcional}
+
+Essa seção aborda programação funcional e suas caracteristicas de maneira resumida.
+Há muito a se falar sobre esse assunto pois ele é extensso e tem uma longa história.
+Para abordar a programação funcional será tomado um foco que toma como base a computação.
+
+De maneira geral, programas de computadores existem para resolver problemas computacionais.
+Segundo \cite{matrix} um problema computacional é
+" [...] uma especificação de entrada-saída que um procedimento tenha que satisfazer."
+e um procedimento é
+"[...] uma descrição precisa de uma computação; ele aceita entradas (chamadas de argumentos) e produz uma saída (chamado de valor de retorno).".
+Ou seja, independente do paradigma utilizado para resolver o problema (funcional ou imperativa), ambos são capazes de definir um procedimento para um problema computacional, a grande diferença está em como esse procedimento é definido.
+
+Segundo \cite{Bird},
+\begin{quotation}
+"Programção funcional é: um método para construção de programas que enfatiza funções e suas aplicações ao invéz de commandos e suas execuções; programação funcional faz uso de notações matemática simples que permite que problemas sejam descritos de maneira clara e concisa. [...]".
+\end{quotation}
+A programação imperativa foca em passos para resolver um problema, cada passo desse pode ser traduzido de maneira rasoavelmente direta em instruções de uma CPU.
+Isso faz com que o procedimeto escrito imperativemente reflita muito mais a máquina do que ao homem.
+O paradigma funcional tira o foco nos passos individuais para solucionar o problema e enfatiza uma estrutura para resolver o problema.
+
+Em seguida serão abordados aspectos mais técnicos da programação funcional.
+
+\subsubsection{Funções para resolver problemas}
+
+Como visto anteriormente, a programação funcional propõe que problemas computacionais sejam resolvidos de maneira mais declarativa.
+O foco muda de "quais passos é preciso para resolver esse problema" para "quais transformações aplicar nas minhas entradas para produzir a saída".
+
+Para exemplificar essa idea considere o seguinte problema.
+Dado uma lista de nomes, com nome, nome do meio e sobrenomes, crie uma lista com todas as combinações de primeiro nome e ultímo nome, ignorando nomes do meio e aonde as combinações cuja soma do primeiro e ultimo nome não exceda 15 caracteres (incluindo o espaço).
+Para isso, ao invez de analisar os passos para processar esses dados, uma boa ideia é pensar em como manipular os dados para se obter o resultado desejado.
+Para esse problema, sugere-se a seguinte solução:
+
+\begin{enumerate}
+\item{Separar cada nome da lista de nomes nos espaços e armazenar os nomes uma lista.}
+\item{Filtrar listas que só possuem um elemento (somente um nome).}
+\item{Filtrar listas e remover nomes do meio.}
+\item{Criar uma lista de nomes e uma lista sobrenomes.}
+\item{Realizar o produto cartesiano sobre essa lista e gerar uma lista de tuplas.}
+\item{Tranformar tuplas em strings fazendo a concatenação do primeiro nome e do sobrenome.}
+\end{enumerate}
+
+Percebe-se que cada passo acima realiza uma única ação, sendo ela simples e clara e é interessante modelar cada um desses passos como uma função.
+Na linguagem Haskell o tipos dos argumentos e do retorno de uma função é dado pela notação nomeDaFuncao :: arg1 -> arg2 -> ... -> retorno, onde arg1 e arg2 definem os tipos dos argumentos \cite{lipovaca}.
+Para identificar listas em Haskell é usado o símbolo [], ou seja [Char] indica uma lista de caracteres e tuplas são indicatas com () onde (String, String) indica uma tupla com dois elementos, ambos strings.
+Podemos agora reescrever o problema acima definindo todas as funções que serão utilizadas.
+
+Primeiramente definiremos o problema enunciado como uma função usando a notação introduzida.
+O problema inicial é a função $combinarNomes :: [String] -> [String]$ , ou seja uma função que recebe uma lista de Strings e retorna uma lista de Strings.
+Em seguida, iremos declarar as funções que representam cada passo acima.
+
+\begin{enumerate}
+\item{separarNomes :: [String] -> [[String]]}
+\item{tirarIncompleto :: [[String]] -> [[String]]}
+\item{removerSobrenomes :: [[String]] -> [[String]]}
+\item{gerarNomesESobrenomes :: [[String]] -> ([String], [String])}
+\item{gerarCombinacoes :: ([String], [String]) -> [(String, String)]}
+\item{concatenarNomes :: [(String, String)] -> [String]}
+\end{enumerate}
+
+Segundo \cite{lipovaca} a assinatura de uma função em Haskell combinado com um nome descritivo diz muito sobre a função e de fato, dados os nomes e sua assinatura, pode-se facilmente deduzir o que cada função está fazendo.
+
+O objetivo dessa seção foi dar um exemplo alto nível de como é resolvido um problema de maneira funcional.
+
+\subsection{Automatas e expressões regulares}
+
+Como visto, as expressões regulares representam uma maneira conveniente de descrever conjutos de string.
+Embora conveniente, a maneira na qual as expressões regulares foram introduzidas não permite uma tradução direta delas para um ambiente computacional.
+Essa seção faz a ligação entre esses objetos teóricos e uma descrição matématica das mesmas.
+
+\subsubsection{Definição de uma automata}
+
+Segundo \cite{comp}, as automatas modelam um computador com uma quantidade minúscula de memória.
+A ideia central de uma automata é representar uma estrutura computacional a partir de um conjunto de estados e entradas.
+
+Os estados da automata constitui um conjunto denominado de $Q$, o conjunto de estados.
+Dentre esses estados existe um único estado inicial da automata chamado de $q_o \in Q$.
+Automatas recebem entradas a partir de simbolos, o conjuto de todos os símbolos reconhecidos por uma automata define um conjunto $\Sigma$ chamado de alfabeto da automata.
+Os estados da automata podem ou não estar conectados, quando existe uma conexão entre dois estados essa conexão é representada por um simbolo $\alpha \in \Sigma$.
+As transições entre estados de uma automata é representado por uma função $\delta$ onde $\delta : Q \times \Sigma \mapsto Q$, ou seja $\delta$ recebe dois argumentos, um estado e um símbolo e mapeia esse par a um estado.
+Finalmente, a automata possui um conjunto de estados de aceitação $F$, onde $F \in Q$, caso a automata termine sua execução em um estado $q \in F$, o string de entrada foi aceito pela automata.
+Formalmente, então, uma automata é uma tupla com 5 elementos $(Q, \Sigma, \delta, q_o, F)$ \cite{comp}.
+
+A partir da descrição formal de uma automata, podemos definir uma rotina de computação.
+De maneira breve, o objetivo dessa rotina é verificar que após processar o string de entrada a automata se encontra em um estado de aceitação.
+
+Como foi visto, uma automata pode receber um conjunto de entradas que definem seu alfabeto $\Sigma$.
+Deseja-se definir um procedimento onde dado um string de entrada e uma automata no seu estado inicial, retorne o estado final após processar a entrada.
+Esse procedimento é definido como dado uma entrada $w=w_1w_2...w_n \mid w_i \in \Sigma$ e uma automata $M$ no seu estado inicial, será retornado um estado $q \in Q$.
+Caso o estado final seja um estado de aceitação ($q \in F$), é dito que $M$ aceita $w$ \cite{comp}.
+Formalmente, segundo \cite{comp} $M$ aceita $w = w_1w_2...w_n$ se: existe uma sequencia de estados $r_0, r_1, ... r_n \in Q$ se $r_0 = q_0$; $\delta(r_i, w_{i+1}) = r_{i+1},$ para $i = 0, ..., n-1$; $r_n \in F$.
+
+O ponto chave desse discussão é apresentado por \cite{comp}, onde foi provado que é possível construir uma automata para qualquer regex.
+Sendo assim, é possível definir padrões de busca usando uma expressão regular, converter essa expressão regulara para uma automata e usar essa automata para realizar a busca pelo padrão em um string.
+
+\input{tex/metodologia}

@@ -1,0 +1,97 @@
+%Helper file which allows me compile the article without worrying about ABNT stuff
+
+\documentclass[12pt]{article}
+\usepackage[a4paper,top=25mm,bottom=25mm,width=150mm]{geometry}
+\usepackage[brazilian]{babel}
+\usepackage[backend=biber,style=authoryear,sorting=nyt]{biblatex}
+\usepackage{datetime}
+\addbibresource{refs.bib}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+\usepackage{listings}
+\usepackage{graphicx}
+\lstset{language=Python,
+  basicstyle=\ttfamily\scriptsize}
+
+\input{figures/figures}
+\renewcommand{\cite}{\parencite}
+
+\newdateformat{mydate}{\THEMONTH \/ \THEYEAR}
+
+\usepackage{pdfpages}
+
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks,
+  citecolor=black,
+  filecolor=black,
+  linkcolor=black,
+  urlcolor=black
+}
+
+%Macros 
+\newcommand{\disciplina}{disciplina de computação gráfica}
+\newcommand{\aluno}{Bruno Gomes}
+\newcommand{\prof}{Prof. Marcos Eduardo Pivaro Monteiro}
+\newcommand{\cidade}{curitiba}
+\newcommand{\estado}{paraná}
+\newcommand{\curso}{bacharelado em engenharia da computação}
+
+\begin{document}
+
+\begin{titlepage}
+  \begin{center}
+    \vspace{0.7cm}
+    \textbf{CENTRO UNIVERSITÁRIO INTERNACIONAL UNINTER}\\
+    \vspace{0.3cm}
+    \textbf{CURSO DE ENGENHARIA DA COMPUTAÇÃO}\\
+    \vspace{3cm}
+    \logo
+    \vspace{2cm}
+    \textbf{\MakeUppercase{relatório de estágio supervisionado obrigatório}}\\
+    \vspace{5cm}
+  \end{center}
+\end{titlepage}
+
+\begin{center}
+  \MakeUppercase{\cidade}\\
+  \mydate \today\\
+  \MakeUppercase{\aluno}\\
+  \vspace{7cm}
+  \textbf{RELATÓRIO DE ESTÁGIO}\\
+\end{center}
+
+\begin{minipage}[t]{0.5\textwidth}
+\hfill
+\end{minipage}
+\begin{minipage}[t]{0.5\textwidth}
+  \begin{flushright}
+  Relatório de estágio apresentado ao Curso de Engenharia de Computação do Centro Universitário UNINTER.
+  \end{flushright}
+\end{minipage}
+  
+
+\newpage
+\begin{center}
+\MakeUppercase{\cidade}\\
+\mydate \today \\
+\end{center}
+\tableofcontents
+
+\newpage
+\input{tex/apresentacao}
+\newpage
+\input{tex/historico}
+\newpage
+\input{tex/atividades}
+\newpage
+\input{tex/cronograma}
+\newpage
+\input{tex/consideracoes}
+\newpage
+\input{tex/parecer-tecnico}
+\newpage
+\printbibliography
+\end{document}

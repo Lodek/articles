@@ -1,0 +1,179 @@
+\subsection{REVISÃO DE LITERATURA}
+\subsubsection{Características do simulador}
+Primeiramente serão definidas as características do simulador, o que também define o escopo do projeto.
+
+O simulador construído faz uso do conceito de hierarquia para construir circuitos.
+Segundo \textcite{harris}, hierarquia é um princípio usado para lidar com a complexidade de circuitos digitais, dividindo um sistema em módulos e submódulos até que cada parte seja fácil de entender.
+Ainda segundo \textcite{harris}, esse mesmo princípio é usado em linguagens HDL para descrever um circuito de maneira estrutural.
+
+Os circuitos digitais têm uma forte correlação com a lógica matemática.
+Essa relação é graças ao conceito de \emph{static discipline}, que restringe os valores de voltagem que um circuito interpreta a duas possibilidades \cite{kaufman}.
+Sendo assim, os circuitos digitais fazem uso dos operadores lógicos AND, OR, XOR e NOT.
+Esses operadores têm os seus equivalentes na forma de portas lógicas na eletrônica digital.
+O simulador disponibiliza as portas AND, OR e XOR como parte da biblioteca.
+As portas lógicas são os átomos da eletrônica digital e circuitos mais complexos são implementados a partir delas usando o conceito de hierarquia.
+
+Circuitos digitais reais possuem atrasos e são sujeitos a ruídos \cite{kaufman}.
+Esses fatores são de grande preocupação para a construção de circuitos digitais reais e ferramentas HDL levam em consideração essas variáveis.
+O simulador ignora essas condições e trabalha com sinais digitais perfeitos (sem ruído) e instantâneos (sem atraso).
+Essa simplificação possibilita uma ferramenta menos complexa e mais amigável.
+
+Uma grande vantagem da HDL é que ela pode ser usada para simulação e síntese de circuitos.
+O processo de síntese da HDL realiza simplificação de portas lógicas e realiza otimizações para o tipo de tecnologia que será usada no processo de fabricação \cite{harris}.
+A ferramenta construída não realiza o processo de síntese ou de simplificação de portas lógicas.
+
+O simulador faz uso da orientação a objetos para construir circuitos e foi definido um modelo que descreve circuitos usando classes.
+Para criar um circuito o usuário deve escrever uma classe e especificar os sub-circuitos e as ligações entre eles.
+As classes criadas podem então ser usadas para a criação de outro circuitos, fazendo uso do conceito de hierarquia.
+
+O processo de simulação será feito através de scripts ou via um interpretador.
+A interação via interpretador é mais simples porém limitada e repetitiva.
+A vantagem é que o interpretador é um ambiente interativo com feedback instantâneo que ajuda no processo criativo.
+Os scripts consistem de: inicializar o circuito a ser simulado e variar os sinais de entrada desse circuito.
+Assim, o usuário pode usar um script para gerar a tabela verdade do circuito que ele criou e verificar se o mesmo esta correto.
+O uso de scripts pode parecer desnecessariamente complicado porém apresenta a vantagem de ser automatizável, sendo possível automatizar o processo de teste e simulação de circuitos usando funções. 
+
+\subsubsection{Eletrônica digital em objetos}
+
+O objetivo dessa seção é: apresentar o paradigma orientado a objetos, identificar os constituintes da lógica digital e definir quais objetos farão parte do modelo que irá ser usado pela ferramenta. 
+
+A programação orientada a objetos parte do princípio de criar um modelo, em software, um sistema físico.
+Esse paradigma é explicado por \cite{objects} como:
+
+\begin{quote}
+O paradigma de orientação a objetos é baseado em uma correlação intuitiva entre um software simulando um sistemas físico e o sistema físico propriamente dito.
+É feita uma analogia entre construir um modelo algorítmico de um sistema físico a partir de componentes de software e construir um modelo mecânico do sistema a partir de objetos concretos.
+Sendo assim, por analogia, os próprios componentes de software passam a ser chamados de objetos.
+\end{quote}
+
+A orientação a objetos facilita a macro visão, pois o mesmo passa a ser mais concreto e modular.
+Deseja-se criar um modelo orientado a objetos para circuitos digitais que seja intuitivo para o usuário.
+Para construir um modelo orientado a objeto é necessário identificar o que seriam os objetos que regem a lógica digital.
+
+A literatura define um circuito, no escopo da eletrônica digital, como sendo "[...] uma rede de processamento de variáveis com valores discretos.", \cite{harris}.
+Como um circuito é uma rede isso implica que exista comunicação entre os elementos dessa rede.
+Em circuitos digital, tal como em circuitos analógicos, os fios são os objetos que transmitem informação entre os elementos.
+Essa definição expõe necessidade da existência dos objetos fio e circuito na eletrônica digital, ambos farão parte do modelo de software da ferramenta.
+
+Como visto, fios são os propagadores de informação.
+Cada fio contém uma unidade de informação, chamado de bit.
+Alguns circuitos recebem múltiplos bits de informação, tal como um somador de 8 bits.
+Naturalmente o aumento do número de bits sendo transmitido aumenta o número de fios.
+É desejável abstrair essa característica.
+Na literatura, um grupo de fios carregando partes da mesma informação para um circuito são agrupados e denominados de Bus.
+Como um fio transmite um bit uma bus transmite vários bits.
+Um grupo de bits será denominado de sinal.
+Isso introduz dois novos objetos: bus e sinal.
+
+O objeto sinal é um pouco peculiar por não ter um equivalente preciso em um circuito físico, vendo que pode-se apenas medir o sinal (voltagem) de apenas um fio de cada vez.
+O objeto sinal é um exemplo de uma abstração definida a fim de simplificar o modelo.
+Para o usuário, é mais conveniente representar uma Bus como um único número, ao invés de um conjunto de bits.
+O sinal é construído a partir desse conjunto de bits que são interpretados como um número binário.
+De maneira geral, o sinal de uma bus com $n$ fios é um número natural no intervalo $[0,2^n -1]$, onde $n \in N $ \cite{harris}.
+
+Foi visto o que um circuito faz mas não sua interface.
+Segundo \textcite{harris}, o circuito é como uma caixa preta que contém terminais de entrada, terminais de saída, uma função que computa a saída a partir das entradas e uma especificação de atrasos no circuito.
+Internamente um circuito contém fios e elementos, onde elemento se refere à outros circuitos \cite{harris}.
+Essa definição introduz um novo elemento, o objeto terminal.
+Pode-se considerar os terminais de entrada e saída como sendo a interface de um circuito, pois definem como interagir com o mesmo.
+Essa definição esta de acordo com \textcite{kaufman}, onde é dito que "[...] o acesso à circuitos eletrônicos é feito por terminais.".
+A partir das definições acima pode-se entender que terminais separam a parte interna e externa de um circuito, em termos de classes, podemos dizer que circuitos contém objetos terminais e que terminais estão associados a um conjunto de fios, ou seja uma Bus.
+
+Em conclusão, circuitos digitais são compostos por: fios, terminais e circuitos.
+Cada fio armazena uma unidade de informação, um bit, que é transmitida a outros circuitos através de terminais neles.
+Uma abstração que ocorre naturalmente na disciplina é agrupar um conjunto de fios e denominá-los de Bus, buses possuem um sinal.
+Os objetos que devem ser codificados então são: fio, bus, terminal e circuito.
+
+\subsubsection{Construção do simulador}
+
+O processo de construção do simulador envolve traduzir as relações descritas na seção anterior para a linguagem de software.
+Esse processo formalmente é feito usando diagramas UML.
+A fígura \ref{f-cd} formaliza o modelo criado tal que ele possa ser transformado em software.
+A fígura especifica a relação entre as classes do software usando a notação tradicional das linguagens UML.
+Dentre elas: Buses possui Wire, Signal é associado a Bus, Terminal é associado a Bus e Circuit possui Terminal.
+
+\figcd
+
+Embora tenha sido definido um modelo de software para circuitos digitais, esse modelo está incompleto.
+Como foi visto, circuitos digitais são uma rede de processamento de variáveis.
+Ao modificar a entrada de um circuito, isso modifica a saída do mesmo.
+No caso da saída estar conectada, existe a necessidade de atualizar o circuito encadeado.
+Uma solução para isso seria atualizar todos os objetos circuitos cada vez que um sinal seja alterado, mas isso é um enorme desperdício.
+Sendo assim, é necessário um componente em software que atualize somente os circuitos afetados.
+
+O simulador faz uso de eventos e um objeto auxiliar para orquestrar o processo de atualização de circuitos.
+Essa solução é um padrão de projeto conhecido como \emph{Observer}.
+O intuito desse padrão é "definir uma dependência de um-para-muitos entre objetos tal que quando um objeto mude de estado, todo seus dependentes sejam notificados e atualizados automaticamente." \cite{gof}. 
+
+\fighmux
+
+Contextualizando, suponha o circuito da fígura \ref{f-hmux}, um circuito multiplexador 4:2 feito a partir de 3 multiplexadores 2:1.
+Nota-se que o circuito possui 6 entradas e 1 saída.
+Suponha que o sinal no terminal D0 seja modificado, a bus D0 está ligada somente ao circuito M1 e nenhum outro, seria um enorme desperdício se o simulador recalculasse a saída de todos os circuitos do programa.
+Fica aparente a necessidade de uma entidade que controle quais circuitos devem ser atualizados a cada alteração de sinal e foi nesse sentido que foi utilizado o padrão Observer.
+
+
+\subsubsection{Processador SAP1}
+\paragraph{Arquitetura SAP1}
+Parte do projeto envolve a construção de um processador.
+Existem inúmeras arquitetura didáticas que poderiam ser implementadas porém foi escolhido a arquitetura SAP1.
+Nessa seção será apresentado os aspectos principais dessa arquitetura.
+
+A arquitetura SAP1 é uma arquitetura de 8 bits com um conjunto de instruções mínimo.
+Essa arquitetura é apresentada por \cite{malvino}.
+Embora contenha um conjunto de instruções reduzido ela apresenta os elementos comuns a todas arquitetura, tais como registradores, unidade de controle, ALU, MAR e etc.
+Essa arquitetura foi escolhida por ter um balanço entre um conjunto de instruções simplificado e microarquitetura moderadamente realística.
+
+A fígura \ref{f-blocks} apresenta um diagrama de blocos da arquitetura.
+Notam-se dois registradores conectados ao somador (A e B), um registrador de saída (O), banco de memória de 16x8 e os demais componentes esperados como registrador de endereço de memória (MAR), contador de programa (PC) e unidade de controle (CU).
+Essa arquitetura apresenta uma única bus (W) que é usada para transmitir endereços e dados, para que não haja sobreposição de valores em W a arquitetura faz uso de lógica de três estados.
+
+\figblocks
+
+O conjunto de instruções da arquitetura é apresentado de maneira resumida na tabela \ref{t-inst}.
+Essas instruções são: ADD, LDA , SUB e HLT, porém a instrução HLT foi omitida na construção do processador por ser redundante.
+É importante destacar que essa arquitetura não apresenta nenhuma instrução de jump, o que limita muito o tipo de computação que pode ser feito.
+Todas as instruções dessa arquitetura seguem o mesmo formato, 8 bits de comprimento sendo os bits $[0,3]$ destinados à endereço ou dado e os bits $[4,7]$ sendo reservados para o OP code da instrução.
+Em seguida serão abordado os funcionamentos de cada instrução.
+
+\input{tables/instructions}
+
+A instrução LDA é utilizada para carregar um valor ao registrador A.
+Essa instrução contém nos 4 primeiros bits um endereço que será acessado pelo MAR e o valor contido na memória é carregado no registrador A.
+Um exemplo da instrução LDA em linguagem de máquina é 0x19, ou seja, carregar o valor contido no endereço 9 no registrador A.
+
+As instruções ADD e SUB possuem um funcionamento análogo porém realizam operações matemáticas diferentes, essas instruções somam e subtraem, respectivamente, o valor armazenado no registrador A ao valor carregado no registrador B.
+Elas possuem em seus 4 primeiros bits um endereço de memória cujo valor é armazenado é copiado ao registrador B.
+A ALU então opera sobre os registradores A e B e o resultado dessa operação é armazenado no registrador A.
+Um exemplo dessa instrução em linguagem de máquina seria 0x25, ou seja, carregar o valor no endereço 5 ao registrador B, somar os valores de A e B e armazenar o resultado em A. 
+
+A instrução OUT é extremamente simples, ela copia o valor contido no registrador A para o registrador O.
+
+O processador possui 3 registradores disponível ao usuário: registrador A, registrador B e registrador O.
+O registrador A funciona como acumulador e após as instruções de soma (SUM) e subtração (SUB) o resultado da operação é armazenado nele; é possível também alterar diretamente o valor de A utilizando a instrução LDA que carrega o valor contido no endereço encodado na instrução a ele.
+O registrador B funciona como um registrador auxiliar para as instruções de SUM e SUB.
+O endereço indicado pelas instruções é acessado e o valor contido nele é carregado ao registrador B.
+O valor do registrador B é alterado a cada instrução de SUM ou SUB.
+Finalmente, o registrador O é utilizado para apresentar informação ao usuário.
+
+\paragraph{Micro arquitetura}
+Uma importante característica da micro arquitetura do SAP1 é que ela possui micro instruções.
+A micro arquitetura construída foi fortemente baseada na implementação feita na literatura.
+A característica principal dessa microarquitetura é que todas as instruções são executadas em 6 pulsos do clock.
+\footnote{Os detalhes dos ciclos das micro instruções são desnecessários para a construção do processador e para a compreensão da arquitetura da perspectiva do programador. A explicação completa do funcionamento dessa arquitetura pode ser encontrado na obra citada.}
+
+As conexões entre os componentes do processador podem ser visualizados na imagem \ref{f-blocks}.
+Como mencionado anteriormente, essa arquitetura usa lógica de três estados para preservar o valor escrito em W.
+Os blocos PC, RAM, IR e A apresentam lógica de três estados na saída e os blocos A, B, O, IR e MAR apresentam lógica de três estados nos terminais de entrada.
+O controle dos blocos é regida pelas 12 flags presentes na imagem.
+A tabela \ref{t-flags} apresenta o propósito dessas flags. 
+
+\input{tables/flags}
+
+A literatura apresenta duas alternativas para a construção da unidade de controle (CU), uma baseada em lógica combinacional e a outra em uma memória ROM.
+Foi escolhido a CU que utiliza memória ROM por ser mais simples de implementar no simulador.
+Essa CU possui dois terminais de entrada, IW (palavra de instrução) e MIW (palavra de micro instrução) e um de saída CW (palavra de controle).
+A entrada IW carrega os 4 bits que representam o opcode da instrução sendo executada e a entrada MIW contém o ciclo de micro instrução (número de 0 a 5 gerado pelo MIC).
+A saída CW é uma bus de comprimento 12 que orquestra os blocos do processador, essas flags são utilizadas para controlar o comportamento dos registradores, CU e lógica de três estados.
+Como explicado acima, essa CU é uma lookup table para produzir as flags das micro instruções.
+O endereço da memória é dado pela concatenação das buses IW e MIW.

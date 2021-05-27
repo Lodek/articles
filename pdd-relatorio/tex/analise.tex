@@ -1,0 +1,62 @@
+\subsection{ANÁLISE E DISCUSSÃO}
+A ferramenta criada modela os circuitos digitais de uma maneira simplificada.
+Circuitos são compostos de terminais de entrada e saída,  sub circuitos internos e uma rede de ligações.
+Esse modelo implementado usando orientação a objeto resultou em uma descrição simplificada de um circuito.
+Essa descrição faz com que a curva de aprendizado da ferramenta seja, teoricamente, pequena.
+
+A utilização da hierarquia como parte do processo de construção dos circuitos resulta em circuitos modulares.
+Isso é de grande vantagem pois facilita a interoperabilidade dos circuitos escritos por um ou mais usuários.
+Assim, caso o usuário deseja construir um circuito complexo, a modularidade permite que ele separe a construção do circuito em módulos.
+Trabalhar em módulos elimina repetição e permite que cada modulo seja testado isoladamente, fazendo uso de testes unitários.
+
+Como foi visto, um requisito do simulador é que ele fosse capaz de simular um processador.
+Usando a ferramenta, foi possível construir o processador e o mesmo produziu os resultados corretos. 
+A modularidade facilitou muito no processo de construção pois cada modulo foi testado individualmente antes de serem unidos.
+A construção do processador foi simples e resultou em um número moderado de linhas de código, foram menos de 40 linhas para conectar todos os módulos do processador.
+
+O código do processador foi testado usando os programas descritos na seção anterior.
+A execução correta desses programas demonstra que todas as instruções do processador funcionam adequadamente.
+O snippet abaixo demonstra o resultado impresso no terminal para a simulação dos programas 1 e 2.
+Observa-se que o valor de saída (out) para o programa 1 e 2 estão de acordo com o esperado, como foi descrito na metodologia.
+
+\begin{lstlisting}
+~/projects/pdd/builds/sap1 $ python run.py 
+Tempo de execucao: 0:03:29.625620
+resultado prog. 1 Processor: {'clk': '0x0', 'r': '0x0', 'out': '0x3', 'wout': '0x4'}
+resultado prog. 2 Processor: {'clk': '0x0', 'r': '0x0', 'out': '0x7', 'wout': '0xe4'}
+\end{lstlisting}
+
+Um ponto negativo da metodologia textual usada é que para um circuito complexo como o processador, traçar as conexões é algo complexo.
+A partir dessa experiência ficou claro que a carência de qualquer forma de representação gráfica do circuito pode ser prejudicial em algumas construções.
+Uma possível solução seria adicionar um modulo que gera um diagrama de conexões a partir de um objeto circuito.
+
+Embora exista uma dificuldade não esperada com a interface da ferramenta, existe um problema grave de performance que deve ser corrigido para viabilizar o seu uso.
+Isso pode ser observado no tempo de execução dos 2 programas usados para testar o processador.
+Cada processador executou menos de 5 instruções no total, a execução dos 2 programas escritos para o processador demorou um tempo inaceitável, 3.5 minutos, aproximadamente.
+Essa quantia de tempo é astronômica dado a simplicidade das instruções realizadas.
+Deve ser ressaltado que o processador SAP1 usa uma única bus, armazena apenas 16 palavras em memória, opera sobre palavras de 8 bit e possui uma ALU simples.
+É passível de concluir que a simulação de um processador mais complexo, como um de 32 bits seria inviável.
+Esse problema de performance é devido a metodologia hierárquica usada.
+
+Como o elemento base de todos os circuito construídos no simulador foram as portas lógicas, isso significa que todas as operações do circuito utiliza as operações AND, OR e XOR do computador host.
+Isso é um enorme desperdício dos diversos componentes de hardware já presentes no host.
+Por questões de eficiência, o simulador poderia estar fazendo uso dos circuitos de operações matemática e memória embutidos no próprio computador.
+Embora a construção desse circuitos a partir de portas lógicas seja um processo instrutivo, quando usados em um circuito complexo, isso prejudica a performance do simulador.
+A correção desse problema é relativamente simples, basta reescrever as classes de circuitos somadores, subtratores, registradores e etc tal que esses circuitos usem os operadores presentes na linguagem Python.
+Por exemplo, de maneira análoga ao que foi feito na classe AND, onde foi usando o operador \&, a classe do circuito somador usaria o operador "+".
+Isso evita implementar essa operação usando portas lógicas.
+
+A solução para o problema de performance indiretamente resolve uma outra inconveniência relacionada a inspeção de circuitos sequenciais.
+A inspeção de um circuito combinacional pode ser feito de maneira conveniente na ferramenta, pois basta verificar o seus valores de entrada para identificar a saída.
+Essa inspeção é feita usando o comando print, que apresentada os sinais de todas os terminais de entrada e saída.
+Porém devido a natureza da lógica sequencial, seria interessante manter uma lista dos valores anteriores de um circuito sequencial, sendo assim possível fazer uma análise temporal de um circuito de maneira simplificada.
+Por exemplo, suponha a existência de um circuito contador configurável, seria conveniente poder alterar e armazenar um sinal no contador sem alterar o valor na bus do circuito.
+Isso permite que seja possível induzir um estado em um circuito sequencial, o que facilita o processo de debug.
+Para implementar isso, basta adicionar um método de configuração nos circuitos sequenciais, tal como um circuito FlipFlop. 
+
+Em conclusão, a ferramenta construída provou-se capaz de realizar a simulação de diversos circuitos digitais.
+Na construção dela foi utilizado um paradigma orientado a objetos para descrever um circuito, pois acreditava-se que esse paradigma iria simplificar a modelagem de circuitos.
+O escopo do projeto foi delimitado para a construção da ferramenta, como consequência não se sabe se esta ferramenta é de fato mais simples para um novato na disciplina.
+Um interessante próximo passo seria disponibilizar esta ferramenta em um ambiente web a fim de realizar um teste alfa e receber feedback.
+Seria possível desenvolver um webapp com um interpretador Python que contém a biblioteca instalada no ambiente virtualizado.
+Essa metodologia de uso seria ideal pois não requer a instalação da biblioteca ou da linguagem Python no computador do usuário.

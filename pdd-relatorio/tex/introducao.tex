@@ -1,0 +1,57 @@
+\subsection{INTRODUÇÃO}
+\subsubsection{Problema de pesquisa}
+O projeto de pesquisa engloba a construção de um simulador de circuitos digitais em Python.
+O simulador deve usar objetos para modelar circuitos digitais.
+A representação de um circuito é feita por classes escritas pelo usuário.
+Um requisito é que o simulador deve ser capaz de simular um processador.
+Para atender a esse requisito foi construído um processador virtual que implementa a arquitetura SAP1.
+
+\subsubsection{Objetivos}
+a) Objetivo Geral:\\
+Construir uma ferramenta para simulação de circuitos digitais e simular um processador na ferramenta criada.\\
+b) Objetivos Específicos:
+\begin{itemize}
+\item Definir características do simulador e delimitar escopo do projeto.
+\item Modelar circuitos digitais como objetos.
+\item Codificar simulador.
+\item Construir processador.
+\end{itemize}
+
+\subsubsection{Justificativa}
+
+A disciplina de circuitos digitais é a base que explica o funcionamento dos sistemas microprocessados atuais.
+Construir um circuito digital é aplicar os conhecimentos teóricos de maneira prática, um ato fundamental para o aprendizado.
+Para construir circuitos digitais existem três maneiras bem estabelecidas: construir o circuito físico utilizando chipes fabricados, construir o circuito em uma ferramenta de simulação gráfica e construir o circuito em uma ferramenta HDL.
+Será explorado as vantagens e desvantagens de cada método e em seguida será proposto uma alternativa que utiliza a orientação a objetos para construir circuitos.
+
+Os circuitos físicos são normalmente construídos em protoboards utilizando chipes e jumpers.
+Cada chipe é um circuito digital encapsulado que realiza uma operação imutável.
+Existem um arsenal de chipes que realizam operações diferentes.
+Embora seja o método clássico, a medida que os circuitos crescem em complexidade, as chaces de cometer um erro aumentam devido ao número de conexões que devem ser feitas.
+Outra desvantagem é o tempo necessário para construir um circuito físico.
+O processo não é eficiente, demandando muito tempo para verificar conexões e procurar por informações em datasheets.
+Outro problema refere-se à dificuldade de abstrair e modularizar um circuito, caso ele não exista pré fabricado será obrigação do usuário de construir esse circuito sempre que necessário, o que é ineficiente.
+A vantagem desse método é que ele é usado na fase de prototipação de dispositivos eletrônicos.
+Devido a essas características muitas vezes são adotadas ferramentas de simulação ao invés de circuitos físicos.
+
+Existem uma enorme quantidade de ferramentas para simulação porém nem todas são apropriadas para todos os públicos.
+No geral, as ferramentas de simulação mais simples fazem uso de diagramas de conexão.
+Nesses diagramas, o usuário deve posicionar os blocos correspondentes aos circuitos e traçar as conexões entre eles.
+Essa metodologia é pouco melhor do que os circuitos físicos, sendo repetitiva e possuindo baixa abstração.
+Embora existam inúmeras ferramentas de simulação gráficas, o foco principal será nas HDL (linguagem de descrição de hardware).
+
+As HDL são similares a linguagens de programação e são usadas para descrever circuitos.
+A descrição de circuitos em HDL é feita por arquivos de texto, análogos a programas de computador.
+Uma vez escritos, os circuitos podem ser usados para simulação ou síntese, sendo uma solução completa para o processo de design.
+Segundo \textcite{harris}, as HDLs foram criadas na década de 90 para abstrair o processo de design dos engenheiros responsáveis pelos projetos de circuitos digitais, pois elas realizam o processo de otimização e simplificação do circuito.
+Devido a isso, as HDLs agilizam o processo de design e poupam tempo do engenheiro.
+O inconveniente dessas ferramentas é que elas foram projetadas para suprir a necessidade dos engenheiros projetando circuitos digitais para o mercado e, não para a simulação de circuitos para fins didáticos.
+A consequência disso é que as HDL possuem mais funcionalidades que necessário para um contato inicial e por terem sido projetadas para a indústria, a representação de circuitos não é necessariamente intuitiva.
+
+Deseja-se criar uma ferramenta que possui características similares às HDL, porém que apliquem um modelo mais simples e consequentemente mais limitado.
+Essa nova ferramenta seria, idealmente, simples, a fim de ser usada por iniciantes em circuitos digitais.
+Ela seria uma alternativa para estudantes de circuitos digitais que desejam construir um processador sem ter que batalhar com a ferramenta ou com o ambiente de desenvolvimento.
+
+Após a construção da ferramenta, ela será usada para simular um processador que implementa a arquitetura SAP1.
+A ferramenta deve ser capaz de cumprir essa tarefa pois, segundo \textcite{harris} a construção de um processador é quase um rito de passagem para qualquer engenheiro da computação.
+Então, deseja-se que essa ferramenta seja capaz de suprir essa necessidade quase que universal dos estudantes de engenharia.

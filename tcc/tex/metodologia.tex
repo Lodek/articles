@@ -1,0 +1,24 @@
+\subsection{METODOLOGIA}
+
+Como explicado na introdução, o foco destre trabalho é demonstrar alguns  elementos da programação funcional.
+Para isso, foi escolhido o problema de implementar um módulo de busca de strings usando expressões regulares.
+Será escolhido trechos de código especialmente interessante do módulo escrito que serão explciados a fundo.
+
+Foi visto que uma expressão regular pode ser convertida em uma automata equivalente.
+Sendo assim, o problema possui duas tarefas: criar submódulo para converter uma regex em uma automata e implementar um submódulo que permita criar e operar uma automata.
+Serão definidas as arquiteturas de cada submódulo tal como o encadeamento de funções que serão chamadas para resolver cada problema, análogo ao que foi feito anteriormente.
+Será explicado, de maneira alto nível, o que cada função faz baseada em suas entradas e saídas.
+Isso irá motivar a introdução de tipos de dados únicos a programação funcional.
+
+Além dessa inspeção de "caixa preta" das funções, os pontos principais do módulo será explicado em detalhe, o que permitirá aa análise de conceitos importantes no paradigma funcional.
+Será feita uma comparação entre trechos escrito de maneira funcional e imperativa.
+Essa comparação tem dois objetivos: introduzir conceitos referentes a linguagem funcional e identificar em quais situações um código funcional é mais simples, ou mais complexo, que o seu equivalente de maneira imperativa.
+Para introduzir os conceitos do paradigma funcional, o código irá ser projetado tal que demonstre as diferentes ferramentas que compõe a caixa de ferramentas de um programador funcional.
+As ferramentas simples abordarão conceitos comos imutalidade e recursão e as ferramentas mais complexas irão introduzir abstrações muito perculiares da programação funcional tal como \emph{Functors} e \emph{Applicative Functors}.
+A metodologia escolhida tem como objetivo ser transparente quanto aos lados bons e ruins da programação funcional e também auxiliar a associação do paradigma imperativo ao funcional.
+Dessa forma, um leitor familiar com programação imperativa poderá entender como um problema resolvido de maneira imperativa pode ser traduzido para um algoritimo funcional.
+
+Em conclusão, o trabalho irá resolver o problema de criar um módulo de procura em texto usando expressões regulares.
+O problema será quebrado em funções, exemplificando como resolver um problema a partir de funções ao invez de passos.
+O código fonte do módulo criado será usado para introduzir conceitos sobre o paradigma funcional e familiarizar o leitor com algumas ferramentas.
+Ao mesmo tempo, trechos de códigos funcionais serão comparados com seu equivalente escrito em uma linguagem imperativa, o que permitira associar conceitos imperativos a funcionais e expor os pontos fortes e fracos desse paradigma.
